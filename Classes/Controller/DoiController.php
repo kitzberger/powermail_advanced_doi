@@ -11,6 +11,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class DoiController
 {
+    private const FIELD_TYPE = 'check_post_doi_actions';
+
     /**
      * Executed before DOI is being sent.
      *
@@ -25,7 +27,7 @@ class DoiController
     {
         $doi = false;
         foreach ($mail->getAnswers() as $answer) {
-            if ($answer->getField()->getType() === 'check_post_doi_actions') {
+            if ($answer->getField()->getType() === self::FIELD_TYPE) {
                 $doi = true;
             }
         }
@@ -50,7 +52,7 @@ class DoiController
     {
         $postDoiActions = [];
         foreach ($mail->getAnswers() as $answer) {
-            if ($answer->getField()->getType() === 'check_post_doi_actions') {
+            if ($answer->getField()->getType() === self::FIELD_TYPE) {
                 $postDoiActions = array_merge($answer->getValue());
             }
         }
