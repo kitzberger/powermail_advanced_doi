@@ -1,0 +1,16 @@
+plugin.tx_powermail {
+    view {
+        partialRootPaths {
+            8 = EXT:powermail_advanced_doi/Resources/Private/Partials/
+        }
+    }
+    settings {
+        setup {
+            optin {
+                adminMail =
+                fromMail =
+                fromName =
+            }
+        }
+    }
+}

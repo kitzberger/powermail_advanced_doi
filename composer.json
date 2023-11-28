@@ -1,0 +1,35 @@
+{
+  "name": "kitzberger/powermail-advanced-doi",
+  "type": "typo3-cms-extension",
+  "description": "Advanced DOI handling (for EXT:powermail)",
+  "homepage": "https://github.com/kitzberger/powermail_advanced_doi",
+  "authors": [
+    {
+      "name": "Philipp Kitzberger",
+      "role": "Developer"
+    }
+  ],
+  "license": [
+    "GPL-2.0-or-later"
+  ],
+  "keywords": [
+    "TYPO3 CMS",
+    "powermail"
+  ],
+  "require": {
+    "typo3/cms-core": "^11.5"
+  },
+  "suggest": {
+    "in2code/powermail": "*"
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "powermail_advanced_doi"
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "Kitzberger\\PowermailAdvancedDoi\\": "Classes"
+    }
+  }
+}
