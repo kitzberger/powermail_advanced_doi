@@ -5,8 +5,7 @@ namespace Kitzberger\PowermailAdvancedDoi\Controller;
 use In2code\Powermail\Controller\FormController;
 use In2code\Powermail\Domain\Model\Mail;
 use Symfony\Component\Mime\Address;
-use TYPO3\CMS\Core\Mail\FluidEmail;
-use TYPO3\CMS\Core\Mail\Mailer;
+use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class DoiController
@@ -82,14 +81,13 @@ class DoiController
 
     private function sendMail(string $fromMail, string $fromName, string $toMail, string $subject, string $body)
     {
-        $email = GeneralUtility::makeInstance(FluidEmail::class);
-        $email
-            ->from(new Address($fromMail, $fromName))
-            ->to($toMail)
-            ->subject($subject)
-            ->format(FluidEmail::FORMAT_BOTH)
-            ->assign('introduction', $subject)
-            ->assign('content', $body);
-        GeneralUtility::makeInstance(Mailer::class)->send($email);
+        $mail = GeneralUtility::makeInstance(MailMessage::class);
+        $mail
+           ->from(new Address($fromMail, $fromName))
+           ->to(new Address($toMail, $toMail))
+           ->subject($subject)
+           ->text($body)
+           ->html($body)
+           ->send();
     }
 }
