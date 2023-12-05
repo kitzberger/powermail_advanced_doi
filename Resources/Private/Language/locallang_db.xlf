@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" datatype="plaintext" date="2014-05-02T12:00:00Z" product-name="powermail_advanced_doi">
+        <header/>
+        <body>
+            <trans-unit id="tx_powermail_domain_model_mail.tx_powermailadvanceddoi_postdoiactions">
+                <source>Post-DOI actions</source>
+            </trans-unit>
+
+            <trans-unit id="tx_powermailadvanceddoi_postdoiaction">
+                <source>Post-DOI action</source>
+            </trans-unit>
+            <trans-unit id="tx_powermailadvanceddoi_postdoiaction.mail">
+                <source>Mail</source>
+            </trans-unit>
+            <trans-unit id="tx_powermailadvanceddoi_postdoiaction.type">
+                <source>Type</source>
+            </trans-unit>
+            <trans-unit id="tx_powermailadvanceddoi_postdoiaction.crdate">
+                <source>Created at</source>
+            </trans-unit>
+            <trans-unit id="tx_powermailadvanceddoi_postdoiaction.done_at">
+                <source>Done at</source>
+            </trans-unit>
+            <trans-unit id="tx_powermailadvanceddoi_postdoiaction.notice">
+                <source>Notice</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

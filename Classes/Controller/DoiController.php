@@ -5,6 +5,8 @@ namespace Kitzberger\PowermailAdvancedDoi\Controller;
 use In2code\Powermail\Controller\FormController;
 use In2code\Powermail\Domain\Model\Mail;
 use Symfony\Component\Mime\Address;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -62,9 +64,24 @@ class DoiController
         $fromName = $settings['fromName'] ?? $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromName'];
         $adminMail = $settings['adminMail'] ?? false;
 
+        $table = 'tx_powermailadvanceddoi_postdoiaction';
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
+
+        $counter = 0;
         foreach ($postDoiActions as $postDoiAction) {
             if (isset($settings['postConfirmationActions'][$postDoiAction])) {
-                // todo: implementation
+                $queryBuilder
+                    ->insert($table)
+                    ->values([
+                        'mail' => $mail->getUid(),
+                        'type' => $postDoiAction,
+                        'crdate' => $GLOBALS['EXEC_TIME'],
+                        'tstamp' => $GLOBALS['EXEC_TIME'],
+                    ])
+                    ->execute();
+                if ($queryBuilder->getConnection()->lastInsertId()) {
+                    $counter++;
+                }
             } else {
                 if ($adminMail) {
                     $this->sendMail(
@@ -76,6 +93,17 @@ class DoiController
                     );
                 }
             }
+        }
+
+        if ($counter) {
+            $table = 'tx_powermail_domain_model_mail';
+            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
+            $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+            $queryBuilder
+                ->update($table)
+                ->set('tx_powermailadvanceddoi_postdoiactions', $counter)
+                ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($mail->getUid(), \PDO::PARAM_INT)))
+                ->execute();
         }
     }
 
