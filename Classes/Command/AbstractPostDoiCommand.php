@@ -59,38 +59,43 @@ abstract class AbstractPostDoiCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $this->conf = $input->getArguments();
-        $this->conf['type'] = $input->getOption('type');
-        $this->conf['pids'] = $input->getOption('pids');
-
         if ($output->isVerbose()) {
             $this->io->title($this->getDescription());
         }
+
+        $this->initializeConf($input);
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_powermailadvanceddoi_postdoiaction');
         $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
 
         $constraints = [];
-        $constraints[] = $queryBuilder->expr()->eq('done_at', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT));
+        $constraints[] = $queryBuilder->expr()->eq('postdoiaction.done_at', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT));
 
         if ($this->conf['type'] ?? false) {
-            $constraints[] = $queryBuilder->expr()->eq('type', $queryBuilder->createNamedParameter($this->conf['type'], \PDO::PARAM_STR));
+            $constraints[] = $queryBuilder->expr()->eq('postdoiaction.type', $queryBuilder->createNamedParameter($this->conf['type'], \PDO::PARAM_STR));
         }
 
         if ($this->conf['pids'] ?? false) {
             $pids = GeneralUtility::intExplode(',', $this->conf['pids'], true);
-            $constraints[] = $queryBuilder->expr()->in('pid', $queryBuilder->createNamedParameter($pids, Connection::PARAM_INT_ARRAY));
+            $constraints[] = $queryBuilder->expr()->in('postdoiaction.pid', $queryBuilder->createNamedParameter($pids, Connection::PARAM_INT_ARRAY));
         }
 
         $postDoiActions = $queryBuilder
-            ->select('*')
-            ->from('tx_powermailadvanceddoi_postdoiaction')
+            ->select('postdoiaction.*')
+            ->from('tx_powermailadvanceddoi_postdoiaction', 'postdoiaction')
+            ->join(
+                'postdoiaction',
+                'tx_powermail_domain_model_mail',
+                'mail',
+                $queryBuilder->expr()->eq('mail.uid', $queryBuilder->quoteIdentifier('postdoiaction.mail'))
+            )
             ->where($queryBuilder->expr()->andX(...$constraints))
+            ->orderBy('postdoiaction.tstamp', 'ASC')
             ->executeQuery()->fetchAll();
 
-        $mailRepository = GeneralUtility::makeInstance(MailRepository::class);
-
-        if (!empty($postDoiActions)) {
+        if (empty($postDoiActions)) {
+            $this->outputLine('No post DOI actions found.');
+        } else {
             if ($output->isVerbose()) {
                 $this->io->table(
                     array_keys($postDoiActions[0]),
@@ -98,16 +103,29 @@ abstract class AbstractPostDoiCommand extends Command
                 );
             }
 
-            foreach ($postDoiActions as $postDoiAction) {
-                if ($mail = $mailRepository->findByUid($postDoiAction['mail'])) {
-                    $this->handlePostDoiAction($postDoiAction, $mail);
-                } else {
-                    $this->io->warning('No mail record found: ' . $postDoiAction['mail']);
-                }
-            }
+            $this->handlePostDoiActions($postDoiActions);
         }
 
         return self::SUCCESS;
+    }
+
+    protected function initializeConf(InputInterface $input)
+    {
+        $this->conf = $input->getArguments();
+        $this->conf['type'] = $input->getOption('type');
+        $this->conf['pids'] = $input->getOption('pids');
+    }
+
+    protected function handlePostDoiActions(array $postDoiActions)
+    {
+        $mailRepository = GeneralUtility::makeInstance(MailRepository::class);
+        foreach ($postDoiActions as $postDoiAction) {
+            if ($mail = $mailRepository->findByUid($postDoiAction['mail'])) {
+                $this->handlePostDoiAction($postDoiAction, $mail);
+            } else {
+                $this->io->warning('No mail record found: ' . $postDoiAction['mail']);
+            }
+        }
     }
 
     protected function handlePostDoiAction(array $postDoiAction, Mail $mail)
