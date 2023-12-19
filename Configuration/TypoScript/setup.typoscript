@@ -4,13 +4,13 @@ plugin.tx_powermail {
             8 = EXT:powermail_advanced_doi/Resources/Private/Partials/
         }
     }
-    settings {
-        setup {
-            optin {
-                adminMail =
-                fromMail =
-                fromName =
-            }
-        }
-    }
+    # settings {
+    #     setup {
+    #         optin {
+    #             adminMail =
+    #             fromMail =
+    #             fromName =
+    #         }
+    #     }
+    # }
 }

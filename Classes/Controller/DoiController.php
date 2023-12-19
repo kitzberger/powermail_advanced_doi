@@ -54,7 +54,7 @@ class DoiController
         $postDoiActions = [];
         foreach ($mail->getAnswers() as $answer) {
             if ($answer->getField()->getType() === self::FIELD_TYPE) {
-                $postDoiActions = array_merge($answer->getValue());
+                $postDoiActions = array_merge($postDoiActions, $answer->getValue());
             }
         }
 
@@ -69,7 +69,7 @@ class DoiController
 
         $counter = 0;
         foreach ($postDoiActions as $postDoiAction) {
-            if (isset($settings['postConfirmationActions'][$postDoiAction])) {
+            // if (isset($settings['postConfirmationActions'][$postDoiAction])) {
                 $queryBuilder
                     ->insert($table)
                     ->values([
@@ -82,17 +82,17 @@ class DoiController
                 if ($queryBuilder->getConnection()->lastInsertId()) {
                     $counter++;
                 }
-            } else {
-                if ($adminMail) {
-                    $this->sendMail(
-                        $fromMail,
-                        $fromName,
-                        $adminMail,
-                        'EXT:powermail_doi :: Post-Confirmation "' . $postDoiAction . '" missing!',
-                        'This post-confirmation action has not been implemented yet!'
-                    );
-                }
-            }
+            // } else {
+            //     if ($adminMail) {
+            //         $this->sendMail(
+            //             $fromMail,
+            //             $fromName,
+            //             $adminMail,
+            //             'EXT:powermail_doi :: Post-Confirmation missing!',
+            //             'This post-confirmation action "' . $postDoiAction . '" has not been implemented yet!'
+            //         );
+            //     }
+            // }
         }
 
         if ($counter) {
