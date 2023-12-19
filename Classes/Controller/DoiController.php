@@ -73,6 +73,7 @@ class DoiController
                 $queryBuilder
                     ->insert($table)
                     ->values([
+                        'pid' => $mail->getPid(),
                         'mail' => $mail->getUid(),
                         'type' => $postDoiAction,
                         'crdate' => $GLOBALS['EXEC_TIME'],
