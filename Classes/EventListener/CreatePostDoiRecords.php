@@ -1,9 +1,8 @@
 <?php
 
-namespace Kitzberger\PowermailAdvancedDoi\Controller;
+namespace Kitzberger\PowermailAdvancedDoi\EventListener;
 
-use In2code\Powermail\Controller\FormController;
-use In2code\Powermail\Domain\Model\Mail;
+use In2code\Powermail\Events\FormControllerOptinConfirmActionBeforeRenderViewEvent;
 use Symfony\Component\Mime\Address;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Connection;
@@ -12,39 +11,18 @@ use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class DoiController
+final class CreatePostDoiRecords
 {
     private const FIELD_TYPE = 'check_post_doi_actions';
 
     /**
-     * Executed before DOI is being sent.
-     *
-     * If any of the DOI checkboxes has been checked by the user then we sent a
-     * DOI mail no matter what the flexform/typoscript says.
-     */
-    public function createActionBeforeRenderView(Mail $mail, string $hash, FormController $controller)
-    {
-        $doi = false;
-        foreach ($mail->getAnswers() as $answer) {
-            if ($answer->getField()->getType() === self::FIELD_TYPE) {
-                $doi = true;
-            }
-        }
-
-        if ($doi) {
-            // Make sure DOI mail is sent no matter what!
-
-            $settings = $controller->getSettings();
-            $settings = array_replace_recursive($settings, ['main' => ['optin' => '1']]);
-            $controller->setSettings($settings);
-        }
-    }
-
-    /**
      * Executed after DOI confirmation.
      */
-    public function optinConfirmActionAfterPersist(Mail $mail, string $hash, FormController $controller)
+    public function __invoke(FormControllerOptinConfirmActionBeforeRenderViewEvent $event): void
     {
+        $mail = $event->getMail();
+        $controller = $event->getFormController();
+
         $postDoiActions = [];
         foreach ($mail->getAnswers() as $answer) {
             if ($answer->getField()->getType() === self::FIELD_TYPE) {
