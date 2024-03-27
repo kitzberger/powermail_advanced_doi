@@ -15,16 +15,16 @@ call_user_func(
         /** @var Dispatcher $signalSlotDispatcher */
         $signalSlotDispatcher = GeneralUtility::makeInstance(Dispatcher::class);
         $signalSlotDispatcher->connect(
-            'In2code\Powermail\Controller\FormController',
+            \In2code\Powermail\Controller\FormController::class,
             'createActionBeforeRenderView',
-            'Kitzberger\PowermailAdvancedDoi\Controller\DoiController',
+            \Kitzberger\PowermailAdvancedDoi\Controller\DoiController::class,
             'createActionBeforeRenderView',
             FALSE
         );
         $signalSlotDispatcher->connect(
-            'In2code\Powermail\Controller\FormController',
+            \In2code\Powermail\Controller\FormController::class,
             'optinConfirmActionAfterPersist',
-            'Kitzberger\PowermailAdvancedDoi\Controller\DoiController',
+            \Kitzberger\PowermailAdvancedDoi\Controller\DoiController::class,
             'optinConfirmActionAfterPersist',
             FALSE
         );

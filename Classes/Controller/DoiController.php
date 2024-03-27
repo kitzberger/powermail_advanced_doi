@@ -5,6 +5,8 @@ namespace Kitzberger\PowermailAdvancedDoi\Controller;
 use In2code\Powermail\Controller\FormController;
 use In2code\Powermail\Domain\Model\Mail;
 use Symfony\Component\Mime\Address;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Mail\MailMessage;
@@ -19,10 +21,6 @@ class DoiController
      *
      * If any of the DOI checkboxes has been checked by the user then we sent a
      * DOI mail no matter what the flexform/typoscript says.
-     *
-     * @param  Mail           $mail
-     * @param  string         $hash
-     * @param  FormController $controller
      */
     public function createActionBeforeRenderView(Mail $mail, string $hash, FormController $controller)
     {
@@ -44,10 +42,6 @@ class DoiController
 
     /**
      * Executed after DOI confirmation.
-     *
-     * @param  Mail           $mail
-     * @param  string         $hash
-     * @param  FormController $controller
      */
     public function optinConfirmActionAfterPersist(Mail $mail, string $hash, FormController $controller)
     {
@@ -76,10 +70,10 @@ class DoiController
                         'pid' => $mail->getPid(),
                         'mail' => $mail->getUid(),
                         'type' => $postDoiAction,
-                        'crdate' => $GLOBALS['EXEC_TIME'],
-                        'tstamp' => $GLOBALS['EXEC_TIME'],
+                        'crdate' => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'),
+                        'tstamp' => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'),
                     ])
-                    ->execute();
+                    ->executeStatement();
                 if ($queryBuilder->getConnection()->lastInsertId()) {
                     $counter++;
                 }
@@ -103,8 +97,8 @@ class DoiController
             $queryBuilder
                 ->update($table)
                 ->set('tx_powermailadvanceddoi_postdoiactions', $counter)
-                ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($mail->getUid(), \PDO::PARAM_INT)))
-                ->execute();
+                ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($mail->getUid(), Connection::PARAM_INT)))
+                ->executeStatement();
         }
     }
 

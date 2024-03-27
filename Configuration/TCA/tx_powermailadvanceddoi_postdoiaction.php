@@ -6,7 +6,6 @@ return [
         'label' => 'type',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
-        'cruser_id' => 'cruser_id',
         'versioningWS' => false,
         'default_sortby' => 'ORDER BY type ASC',
         'delete' => 'deleted',
@@ -16,8 +15,6 @@ return [
             // 'endtime' => 'endtime',
         ],
         'iconfile' => 'EXT:powermail_advanced_doi/Resources/Public/Icons/Extension.png',
-    ],
-    'interface' => [
     ],
     'types' => [
         '1' => [
@@ -59,7 +56,6 @@ return [
             'label' => 'LLL:EXT:powermail_advanced_doi/Resources/Private/Language/locallang_db.xlf:tx_powermailadvanceddoi_postdoiaction.mail',
             'config' => [
                 'type' => 'group',
-                'internal_type' => 'db',
                 'allowed' => 'tx_powermail_domain_model_mail',
                 'size' => 1,
                 'maxitems' => 1,
@@ -88,9 +84,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:powermail_advanced_doi/Resources/Private/Language/locallang_db.xlf:tx_powermailadvanceddoi_postdoiaction.crdate',
             'config' => [
-                'type' => 'input',
-                'renderType' => 'inputDateTime',
-                'eval' => 'datetime,int',
+                'type' => 'datetime',
                 'default' => 0,
                 'readOnly' => true,
             ],
@@ -99,9 +93,7 @@ return [
             'exclude' => false,
             'label' => 'LLL:EXT:powermail_advanced_doi/Resources/Private/Language/locallang_db.xlf:tx_powermailadvanceddoi_postdoiaction.done_at',
             'config' => [
-                'type' => 'input',
-                'renderType' => 'inputDateTime',
-                'eval' => 'datetime,int',
+                'type' => 'datetime',
                 'default' => 0,
                 'readOnly' => true,
             ],
