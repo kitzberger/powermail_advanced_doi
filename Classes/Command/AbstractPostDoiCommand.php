@@ -94,7 +94,7 @@ abstract class AbstractPostDoiCommand extends Command
             ->executeQuery()->fetchAll();
 
         if (empty($postDoiActions)) {
-            $this->outputLine('No post DOI actions found.');
+            $this->outputLine('No post DOI actions of type "' . ($this->conf['type'] ?? '*') . '" found.');
         } else {
             if ($output->isVerbose()) {
                 $this->io->table(
