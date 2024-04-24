@@ -25,7 +25,7 @@ final class CreatePostDoiRecords
 
         $postDoiActions = [];
         foreach ($mail->getAnswers() as $answer) {
-            if ($answer->getField()->getType() === self::FIELD_TYPE) {
+            if ($answer->getField() && $answer->getField()->getType() === self::FIELD_TYPE) {
                 $postDoiActions = array_merge($postDoiActions, $answer->getValue());
             }
         }
