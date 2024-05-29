@@ -2,7 +2,6 @@
 
 namespace Kitzberger\PowermailAdvancedDoi\Command;
 
-use Doctrine\DBAL\Connection;
 use In2code\Powermail\Domain\Model\Mail;
 use In2code\Powermail\Domain\Repository\MailRepository;
 use Symfony\Component\Console\Command\Command;
@@ -10,6 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -69,10 +69,10 @@ abstract class AbstractPostDoiCommand extends Command
         $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
 
         $constraints = [];
-        $constraints[] = $queryBuilder->expr()->eq('postdoiaction.done_at', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT));
+        $constraints[] = $queryBuilder->expr()->eq('postdoiaction.done_at', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT));
 
         if ($this->conf['type'] ?? false) {
-            $constraints[] = $queryBuilder->expr()->eq('postdoiaction.type', $queryBuilder->createNamedParameter($this->conf['type'], \PDO::PARAM_STR));
+            $constraints[] = $queryBuilder->expr()->eq('postdoiaction.type', $queryBuilder->createNamedParameter($this->conf['type'], Connection::PARAM_STR));
         }
 
         if ($this->conf['pids'] ?? false) {
@@ -89,7 +89,7 @@ abstract class AbstractPostDoiCommand extends Command
                 'mail',
                 $queryBuilder->expr()->eq('mail.uid', $queryBuilder->quoteIdentifier('postdoiaction.mail'))
             )
-            ->where($queryBuilder->expr()->andX(...$constraints))
+            ->where($queryBuilder->expr()->and(...$constraints))
             ->orderBy('postdoiaction.tstamp', 'ASC')
             ->executeQuery()->fetchAll();
 
@@ -141,8 +141,8 @@ abstract class AbstractPostDoiCommand extends Command
             ->update('tx_powermailadvanceddoi_postdoiaction')
             ->set('done_at', $doneAt)
             ->set('notice', $notice)
-            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, \PDO::PARAM_INT)))
-            ->execute();
+            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT)))
+            ->executeStatement();
     }
 
     /**

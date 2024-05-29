@@ -7,7 +7,7 @@ call_user_func(
         /**
          * Garbage Collector
          */
-        $tgct = 'TYPO3\CMS\Scheduler\Task\TableGarbageCollectionTask';
+        $tgct = \TYPO3\CMS\Scheduler\Task\TableGarbageCollectionTask::class;
         $table = 'tx_powermailadvanceddoi_postdoiaction';
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][$tgct]['options']['tables'][$table] = [
             'dateField' => 'tstamp',

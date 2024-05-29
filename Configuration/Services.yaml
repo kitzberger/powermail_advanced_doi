@@ -1,0 +1,15 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Kitzberger\PowermailAdvancedDoi\EventListener\EnforceOptIn:
+    tags:
+      - name: event.listener
+        identifier: 'powermail-advanced-doi-enforce-optin'
+
+  Kitzberger\PowermailAdvancedDoi\EventListener\CreatePostDoiRecords:
+    tags:
+      - name: event.listener
+        identifier: 'powermail-advanced-doi-create-post-doi-records'
