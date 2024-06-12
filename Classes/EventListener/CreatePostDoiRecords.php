@@ -3,6 +3,8 @@
 namespace Kitzberger\PowermailAdvancedDoi\EventListener;
 
 use In2code\Powermail\Events\FormControllerOptinConfirmActionBeforeRenderViewEvent;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Mime\Address;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\Connection;
@@ -11,8 +13,10 @@ use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-final class CreatePostDoiRecords
+final class CreatePostDoiRecords implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private const FIELD_TYPE_CHECK = 'check_post_doi_actions';
     private const FIELD_TYPE_HIDDEN = 'hidden_post_doi_action';
 
@@ -37,6 +41,8 @@ final class CreatePostDoiRecords
                 }
             }
         }
+
+        $this->logger->debug('Handling post DOI actions: ' . print_r($postDoiActions, true));
 
         $settings = $controller->getSettings()['optin'];
 
