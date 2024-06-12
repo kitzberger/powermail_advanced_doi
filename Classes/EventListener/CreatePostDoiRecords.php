@@ -13,7 +13,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class CreatePostDoiRecords
 {
-    private const FIELD_TYPE = 'check_post_doi_actions';
+    private const FIELD_TYPE_CHECK = 'check_post_doi_actions';
+    private const FIELD_TYPE_HIDDEN = 'hidden_post_doi_action';
 
     /**
      * Executed after DOI confirmation.
@@ -25,8 +26,15 @@ final class CreatePostDoiRecords
 
         $postDoiActions = [];
         foreach ($mail->getAnswers() as $answer) {
-            if ($answer->getField() && $answer->getField()->getType() === self::FIELD_TYPE) {
-                $postDoiActions = array_merge($postDoiActions, $answer->getValue());
+            if ($answer->getField()) {
+                switch ($answer->getField()->getType()) {
+                    case self::FIELD_TYPE_CHECK:
+                        $postDoiActions = array_merge($postDoiActions, $answer->getValue());
+                        break;
+                    case self::FIELD_TYPE_HIDDEN:
+                        $postDoiActions[] = $answer->getValue();
+                        break;
+                }
             }
         }
 

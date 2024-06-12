@@ -6,12 +6,15 @@ use In2code\Powermail\Events\FormControllerCreateActionBeforeRenderViewEvent;
 
 final class EnforceOptIn
 {
-    private const FIELD_TYPE = 'check_post_doi_actions';
+    private const FIELD_TYPES = [
+        'check_post_doi_actions',
+        'hidden_post_doi_action',
+    ];
 
     /**
      * Executed before DOI is being sent.
      *
-     * If any of the DOI checkboxes has been checked by the user then we sent a
+     * If any of the Post-DOI fields has been checked by the user then we sent a
      * DOI mail no matter what the flexform/typoscript says.
      */
     public function __invoke(FormControllerCreateActionBeforeRenderViewEvent $event): void
@@ -21,7 +24,7 @@ final class EnforceOptIn
 
         $doi = false;
         foreach ($mail->getAnswers() as $answer) {
-            if ($answer->getField()->getType() === self::FIELD_TYPE) {
+            if (in_array($answer->getField()->getType(), self::FIELD_TYPES)) {
                 $doi = true;
             }
         }

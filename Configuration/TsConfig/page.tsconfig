@@ -1,3 +1,7 @@
 tx_powermail.flexForm.type.addFieldOptions.check_post_doi_actions = Checkboxes with Post-DOI actions
 tx_powermail.flexForm.type.addFieldOptions.check_post_doi_actions.dataType = 1
 tx_powermail.flexForm.type.addFieldOptions.check_post_doi_actions.export = 1
+
+tx_powermail.flexForm.type.addFieldOptions.hidden_post_doi_action = Hidden Field with Post-DOI action
+tx_powermail.flexForm.type.addFieldOptions.hidden_post_doi_action.dataType = 0
+tx_powermail.flexForm.type.addFieldOptions.hidden_post_doi_action.export = 1

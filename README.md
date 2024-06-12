@@ -25,7 +25,9 @@ Include this extension's TS right after the one of EXT:powermail.
 Check the property `plugin.tx_powermail.view.partialRootPaths` and the order of
 its indices in case the new field type is not rendered properly.
 
-### Form field
+### Form fields
+
+#### Checkbox
 
 Add a field of type "Checkboxes with Post-DOI action" (`check_post_doi_actions`)
 with the usual checkbox settings syntax:
@@ -37,6 +39,13 @@ Yes, I'd like to win something fancy|tombola
 ```
 
 Those fields are being rendered just like any regular checkbox.
+
+#### Hidden
+
+Add a field of type "Hidden Field with Post-DOI action" (`hidden_post_doi_action`)
+with a default value like `newsletter`.
+
+Those fields are being rendered just like any regular hidden field.
 
 ### Asynchronous processing of these post DOI actions
 
