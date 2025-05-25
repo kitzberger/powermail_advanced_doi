@@ -91,7 +91,8 @@ abstract class AbstractPostDoiCommand extends Command
             )
             ->where($queryBuilder->expr()->and(...$constraints))
             ->orderBy('postdoiaction.tstamp', 'ASC')
-            ->executeQuery()->fetchAll();
+            ->executeQuery()
+            ->fetchAllAssociative();
 
         if (empty($postDoiActions)) {
             $this->outputLine('No post DOI actions of type "' . ($this->conf['type'] ?? '*') . '" found.');
