@@ -4,6 +4,9 @@ services:
     autoconfigure: true
     public: false
 
+  Kitzberger\PowermailAdvancedDoi\Service\PostDoiActionService:
+    public: true
+
   Kitzberger\PowermailAdvancedDoi\EventListener\EnforceOptIn:
     tags:
       - name: event.listener
@@ -13,3 +16,8 @@ services:
     tags:
       - name: event.listener
         identifier: 'powermail-advanced-doi-create-post-doi-records'
+
+  Kitzberger\PowermailAdvancedDoi\EventListener\CreateDirectActionRecords:
+    tags:
+      - name: event.listener
+        identifier: 'powermail-advanced-doi-create-direct-action-records'
