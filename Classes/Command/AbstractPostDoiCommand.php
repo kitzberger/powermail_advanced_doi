@@ -4,14 +4,12 @@ namespace Kitzberger\PowermailAdvancedDoi\Command;
 
 use In2code\Powermail\Domain\Model\Mail;
 use In2code\Powermail\Domain\Repository\MailRepository;
+use Kitzberger\PowermailAdvancedDoi\Service\PostDoiActionService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 abstract class AbstractPostDoiCommand extends Command
@@ -55,7 +53,7 @@ abstract class AbstractPostDoiCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
 
@@ -65,46 +63,12 @@ abstract class AbstractPostDoiCommand extends Command
 
         $this->initializeConf($input);
 
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_powermailadvanceddoi_postdoiaction');
-        $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
+        $postDoiActions = $this->fetchPostDoiActions(
+            $this->conf['type'],
+            $this->conf['pids']
+        );
 
-        $constraints = [];
-        $constraints[] = $queryBuilder->expr()->eq('postdoiaction.done_at', $queryBuilder->createNamedParameter(0, Connection::PARAM_INT));
-
-        if ($this->conf['type'] ?? false) {
-            $constraints[] = $queryBuilder->expr()->eq('postdoiaction.type', $queryBuilder->createNamedParameter($this->conf['type'], Connection::PARAM_STR));
-        }
-
-        if ($this->conf['pids'] ?? false) {
-            $pids = GeneralUtility::intExplode(',', $this->conf['pids'], true);
-            $constraints[] = $queryBuilder->expr()->in('postdoiaction.pid', $queryBuilder->createNamedParameter($pids, Connection::PARAM_INT_ARRAY));
-        }
-
-        $postDoiActions = $queryBuilder
-            ->select('postdoiaction.*')
-            ->from('tx_powermailadvanceddoi_postdoiaction', 'postdoiaction')
-            ->join(
-                'postdoiaction',
-                'tx_powermail_domain_model_mail',
-                'mail',
-                $queryBuilder->expr()->eq('mail.uid', $queryBuilder->quoteIdentifier('postdoiaction.mail'))
-            )
-            ->where($queryBuilder->expr()->and(...$constraints))
-            ->orderBy('postdoiaction.tstamp', 'ASC')
-            ->executeQuery()->fetchAll();
-
-        if (empty($postDoiActions)) {
-            $this->outputLine('No post DOI actions of type "' . ($this->conf['type'] ?? '*') . '" found.');
-        } else {
-            if ($output->isVerbose()) {
-                $this->io->table(
-                    array_keys($postDoiActions[0]),
-                    $postDoiActions
-                );
-            }
-
-            $this->handlePostDoiActions($postDoiActions);
-        }
+        $this->handlePostDoiActions($postDoiActions);
 
         return self::SUCCESS;
     }
@@ -114,6 +78,25 @@ abstract class AbstractPostDoiCommand extends Command
         $this->conf = $input->getArguments();
         $this->conf['type'] = $input->getOption('type');
         $this->conf['pids'] = $input->getOption('pids');
+    }
+
+    protected function fetchPostDoiActions(?string $type = null, ?string $pids = null): array
+    {
+        $postDoiActionService = GeneralUtility::makeInstance(PostDoiActionService::class);
+        $postDoiActions = $postDoiActionService->fetchPostDoiActions($type, $pids, true);
+
+        if (empty($postDoiActions)) {
+            $this->outputLine('No post DOI actions of type "' . ($type ?? '*') . '" found.');
+        } else {
+            if ($this->io->isVerbose()) {
+                $this->io->table(
+                    array_keys($postDoiActions[0]),
+                    $postDoiActions
+                );
+            }
+        }
+
+        return $postDoiActions;
     }
 
     protected function handlePostDoiActions(array $postDoiActions)
@@ -135,14 +118,8 @@ abstract class AbstractPostDoiCommand extends Command
 
     protected function updatePostDoiAction(int $uid, int $doneAt, string $notice)
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_powermailadvanceddoi_postdoiaction');
-        $queryBuilder->getRestrictions()->removeAll()->add(GeneralUtility::makeInstance(DeletedRestriction::class));
-        $queryBuilder
-            ->update('tx_powermailadvanceddoi_postdoiaction')
-            ->set('done_at', $doneAt)
-            ->set('notice', $notice)
-            ->where($queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, Connection::PARAM_INT)))
-            ->executeStatement();
+        $postDoiActionService = GeneralUtility::makeInstance(PostDoiActionService::class);
+        $postDoiActionService->updatePostDoiAction($uid, $doneAt, $notice);
     }
 
     /**
@@ -155,7 +132,7 @@ abstract class AbstractPostDoiCommand extends Command
     protected function outputLine(string $string, $arguments = [])
     {
         if ($this->io) {
-            $this->io->text(sprintf($string, $arguments));
+            $this->io->text(sprintf($string, ...$arguments));
         }
     }
 }

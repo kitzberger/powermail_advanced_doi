@@ -2,7 +2,7 @@
 
 namespace Kitzberger\PowermailAdvancedDoi\EventListener;
 
-use In2code\Powermail\Events\FormControllerOptinConfirmActionBeforeRenderViewEvent;
+use In2code\Powermail\Events\FormControllerCreateActionAfterMailDbSavedEvent;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Mime\Address;
@@ -13,17 +13,16 @@ use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-final class CreatePostDoiRecords implements LoggerAwareInterface
+final class CreateDirectActionRecords implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    private const FIELD_TYPE_CHECK = 'check_post_doi_actions';
-    private const FIELD_TYPE_HIDDEN = 'hidden_post_doi_action';
+    private const FIELD_TYPE_HIDDEN_DIRECT = 'hidden_direct_action';
 
     /**
-     * Executed after DOI confirmation.
+     * Executed after mail saved in DB
      */
-    public function __invoke(FormControllerOptinConfirmActionBeforeRenderViewEvent $event): void
+    public function __invoke(FormControllerCreateActionAfterMailDbSavedEvent $event): void
     {
         $mail = $event->getMail();
         $controller = $event->getFormController();
@@ -32,19 +31,14 @@ final class CreatePostDoiRecords implements LoggerAwareInterface
         foreach ($mail->getAnswers() as $answer) {
             if ($answer->getField()) {
                 switch ($answer->getField()->getType()) {
-                    case self::FIELD_TYPE_CHECK:
-                        $postDoiActions = array_merge($postDoiActions, $answer->getValue());
-                        break;
-                    case self::FIELD_TYPE_HIDDEN:
+                    case self::FIELD_TYPE_HIDDEN_DIRECT:
                         $postDoiActions[] = $answer->getValue();
                         break;
                 }
             }
         }
 
-        $this->logger->debug('Handling post DOI actions: ' . print_r($postDoiActions, true));
-
-        $settings = $controller->getSettings()['optin'];
+        $this->logger->debug('Handling direct actions: ' . print_r($postDoiActions, true));
 
         $fromMail = $settings['fromMail'] ?? $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromAddress'];
         $fromName = $settings['fromName'] ?? $GLOBALS['TYPO3_CONF_VARS']['MAIL']['defaultMailFromName'];
@@ -53,6 +47,7 @@ final class CreatePostDoiRecords implements LoggerAwareInterface
         $table = 'tx_powermailadvanceddoi_postdoiaction';
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
 
+        $counter = 0;
         foreach ($postDoiActions as $postDoiAction) {
             // if (isset($settings['postConfirmationActions'][$postDoiAction])) {
                 $queryBuilder
@@ -65,6 +60,9 @@ final class CreatePostDoiRecords implements LoggerAwareInterface
                         'tstamp' => GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp'),
                     ])
                     ->executeStatement();
+                if ($queryBuilder->getConnection()->lastInsertId()) {
+                    $counter++;
+                }
             // } else {
             //     if ($adminMail) {
             //         $this->sendMail(
@@ -77,16 +75,6 @@ final class CreatePostDoiRecords implements LoggerAwareInterface
             //     }
             // }
         }
-
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($table);
-        $counter = $queryBuilder
-            ->count('uid')
-            ->from($table)
-            ->where(
-                $queryBuilder->expr()->eq('mail', $queryBuilder->createNamedParameter($mail->getUid(), Connection::PARAM_INT))
-            )
-            ->executeQuery()
-            ->fetchOne();
 
         if ($counter) {
             $table = 'tx_powermail_domain_model_mail';
