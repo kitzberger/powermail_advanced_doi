@@ -32,11 +32,13 @@ final class CreateDirectActionRecords implements LoggerAwareInterface
             if ($answer->getField()) {
                 switch ($answer->getField()->getType()) {
                     case self::FIELD_TYPE_HIDDEN_DIRECT:
-                        $postDoiActions[] = $answer->getValue();
+                        $postDoiActions = array_merge($postDoiActions, GeneralUtility::trimExplode(',', $answer->getValue(), true));
                         break;
                 }
             }
         }
+
+        $postDoiActions = array_unique($postDoiActions);
 
         $this->logger->debug('Handling direct actions: ' . print_r($postDoiActions, true));
 

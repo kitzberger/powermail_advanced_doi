@@ -47,6 +47,17 @@ with a default value like `newsletter`.
 
 Those fields are being rendered just like any regular hidden field.
 
+#### Comma-separated values
+
+Both checkbox and hidden field values support comma-separated types. Each type
+will create a separate "Post DOI action" record. For example:
+
+- A hidden field with value `newsletter,export` creates two records.
+- A checkbox with value `Yes, subscribe and export|newsletter,export` creates
+  two records when checked.
+
+Duplicate types across multiple fields are automatically deduplicated.
+
 ### Asynchronous processing of these post DOI actions
 
 On clicking the DOI link for each of the checked checkboxes a "Post DOI action"
