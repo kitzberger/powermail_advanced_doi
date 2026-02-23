@@ -33,14 +33,18 @@ final class CreatePostDoiRecords implements LoggerAwareInterface
             if ($answer->getField()) {
                 switch ($answer->getField()->getType()) {
                     case self::FIELD_TYPE_CHECK:
-                        $postDoiActions = array_merge($postDoiActions, $answer->getValue());
+                        foreach ($answer->getValue() as $value) {
+                            $postDoiActions = array_merge($postDoiActions, GeneralUtility::trimExplode(',', $value, true));
+                        }
                         break;
                     case self::FIELD_TYPE_HIDDEN:
-                        $postDoiActions[] = $answer->getValue();
+                        $postDoiActions = array_merge($postDoiActions, GeneralUtility::trimExplode(',', $answer->getValue(), true));
                         break;
                 }
             }
         }
+
+        $postDoiActions = array_unique($postDoiActions);
 
         $this->logger->debug('Handling post DOI actions: ' . print_r($postDoiActions, true));
 
