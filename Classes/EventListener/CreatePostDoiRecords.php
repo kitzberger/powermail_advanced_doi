@@ -26,6 +26,12 @@ final class CreatePostDoiRecords implements LoggerAwareInterface
     public function __invoke(FormControllerOptinConfirmActionBeforeRenderViewEvent $event): void
     {
         $mail = $event->getMail();
+
+        if (!$mail->getHidden()) {
+            // Prevent duplicate DOI records
+            return;
+        }
+
         $controller = $event->getFormController();
 
         $postDoiActions = [];
